@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our Song</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,500&family=Caveat:wght@500;600&family=Jost:wght@300;400;500&display=swap');
+
+  :root{
+    --night: #1a1330;
+    --night-deep: #120c22;
+    --coral: #e8927c;
+    --gold: #c9a24b;
+    --cream: #f5ede4;
+    --cream-dim: rgba(245,237,228,0.6);
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  html,body{
+    height:100%;
+    background: radial-gradient(ellipse at 50% 15%, #2a1e45 0%, var(--night) 45%, var(--night-deep) 100%);
+    color: var(--cream);
+    font-family:'Jost', sans-serif;
+    overflow-x:hidden;
+  }
+
+  /* estrellas ambientales */
+  .stars{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+  }
+  .stars span{
+    position:absolute; width:2px; height:2px; background:var(--cream);
+    border-radius:50%; opacity:0.35;
+    animation: twinkle 4s ease-in-out infinite;
+  }
+  @keyframes twinkle{
+    0%,100%{ opacity:0.15; }
+    50%{ opacity:0.7; }
+  }
+
+  .wrap{
+    position:relative; z-index:1;
+    min-height:100vh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding: 8vh 6vw 6vh;
+    text-align:center;
+  }
+
+  .eyebrow{
+    font-family:'Jost', sans-serif;
+    letter-spacing: 0.35em;
+    font-size: 0.68rem;
+    text-transform:uppercase;
+    color: var(--gold);
+    margin-bottom: 2.2rem;
+    opacity:0.85;
+  }
+
+  .frase{
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    font-weight:500;
+    font-size: clamp(1.5rem, 5vw, 2.3rem);
+    line-height:1.5;
+    max-width: 620px;
+    color: var(--cream);
+    margin-bottom: 3.2rem;
+  }
+
+  /* --- Disco de vinilo: elemento firma --- */
+  .platter{
+    position:relative;
+    width: clamp(190px, 42vw, 250px);
+    height: clamp(190px, 42vw, 250px);
+    margin: 0 auto 2.6rem;
+  }
+
+  .vinyl{
+    width:100%; height:100%;
+    border-radius:50%;
+    background:
+      repeating-radial-gradient(circle at center,
+        #0d0918 0px, #0d0918 2px,
+        #1c1530 3px, #1c1530 4px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(245,237,228,0.06);
+    position:relative;
+    transition: transform 0.6s ease;
+    animation: spin 9s linear infinite;
+    animation-play-state: paused;
+  }
+
+  .vinyl.playing{ animation-play-state: running; }
+
+  .label{
+    position:absolute; top:50%; left:50%;
+    width:38%; height:38%;
+    transform:translate(-50%,-50%);
+    border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, var(--coral), #b8593f 70%);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: inset 0 0 12px rgba(0,0,0,0.4);
+  }
+
+  .label span{
+    font-family:'Caveat', cursive;
+    font-size: 0.95rem;
+    color: var(--cream);
+    transform: rotate(-8deg);
+  }
+
+  .center-hole{
+    position:absolute; top:50%; left:50%;
+    width:8px; height:8px;
+    background: var(--night-deep);
+    border-radius:50%;
+    transform:translate(-50%,-50%);
+  }
+
+  @keyframes spin{
+    from{ transform:rotate(0deg); }
+    to{ transform:rotate(360deg); }
+  }
+
+  .cancion{
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    font-size: 1.05rem;
+    color: var(--cream-dim);
+    letter-spacing:0.02em;
+    margin-bottom: 2.6rem;
+  }
+
+  .cancion strong{
+    font-style:normal;
+    color: var(--cream);
+    font-weight:600;
+  }
+
+  .btn-escuchar{
+    appearance:none; border:1px solid rgba(201,162,75,0.5);
+    background: transparent;
+    color: var(--gold);
+    font-family:'Jost', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    padding: 0.95rem 2.6rem;
+    border-radius: 999px;
+    cursor:pointer;
+    transition: all 0.35s ease;
+    display:flex; align-items:center; gap:0.7rem;
+  }
+
+  .btn-escuchar:hover, .btn-escuchar.active{
+    background: var(--gold);
+    color: var(--night-deep);
+    box-shadow: 0 8px 24px rgba(201,162,75,0.25);
+  }
+
+  .btn-escuchar svg{ width:14px; height:14px; }
+
+  .player-zone{
+    margin-top: 1.8rem;
+    width:100%; max-width: 340px;
+    opacity:0; height:0; overflow:hidden;
+    transition: opacity 0.5s ease;
+  }
+
+  .player-zone.show{
+    opacity:1; height:auto; overflow:visible;
+  }
+
+  audio{
+    width:100%;
+    filter: invert(0.9) sepia(0.15) saturate(1.3) hue-rotate(200deg);
+    border-radius: 10px;
+  }
+
+  .aviso{
+    margin-top:1rem;
+    font-size:0.75rem;
+    color: var(--cream-dim);
+  }
+
+  /* --- Luna roja --- */
+  .moon-wrap{
+    position:fixed;
+    top: -70px; left:50%;
+    transform: translateX(-50%);
+    z-index:0;
+    pointer-events:none;
+  }
+  .moon{
+    width: 190px; height:190px;
+    border-radius:50%;
+    background: radial-gradient(circle at 38% 32%, #d95c45 0%, #b3342b 45%, #7a1f22 100%);
+    box-shadow:
+      0 0 50px 14px rgba(179,52,43,0.35),
+      0 0 110px 40px rgba(179,52,43,0.18);
+    position:relative;
+    opacity:0.9;
+  }
+  .moon::before, .moon::after, .moon span{
+    content:''; position:absolute; border-radius:50%;
+    background: rgba(0,0,0,0.12);
+  }
+  .moon::before{ width:34px; height:34px; top:28%; left:22%; }
+  .moon::after{ width:22px; height:22px; top:58%; left:55%; }
+
+  /* --- estrellas: además de titilar, derivan lento --- */
+  .stars{ animation: drift 90s linear infinite; }
+  @keyframes drift{
+    from{ transform: translateY(0); }
+    to{ transform: translateY(-40px); }
+  }
+
+  /* --- Girasoles al pie --- */
+  .sunflowers{
+    position:fixed;
+    bottom:0; left:0; right:0;
+    z-index:0;
+    display:flex; justify-content:center;
+    align-items:flex-end;
+    gap: clamp(4px, 4vw, 26px);
+    padding-bottom: 2px;
+    pointer-events:none;
+    opacity:0.9;
+  }
+  .sunflower{
+    width: clamp(26px, 6.5vw, 42px);
+    transform-origin: bottom center;
+    animation: sway 5s ease-in-out infinite;
+  }
+  .sunflower.d2{ animation-duration: 6.5s; animation-delay: -1.2s; }
+  .sunflower.d3{ animation-duration: 5.8s; animation-delay: -2.4s; }
+  .sunflower.d4{ animation-duration: 7s;   animation-delay: -0.6s; }
+  .sunflower.d5{ animation-duration: 6.1s; animation-delay: -3s; }
+  @keyframes sway{
+    0%,100%{ transform: rotate(-3deg); }
+    50%{ transform: rotate(3deg); }
+  }
+
+  .firma{
+    margin-top: 4rem;
+    font-family:'Caveat', cursive;
+    font-size: 1.3rem;
+    color: var(--coral);
+    opacity:0.9;
+  }
+</style>
+</head>
+<body>
+
+<div class="moon-wrap"><div class="moon"></div></div>
+<div class="stars" id="stars"></div>
+
+<div class="sunflowers" id="sunflowers">
+  <div class="sunflower d2">
+    <svg viewBox="0 0 60 100" width="100%" height="100%">
+      <line x1="30" y1="45" x2="30" y2="100" stroke="#4a5a2b" stroke-width="4"/>
+      <path d="M30 45 Q18 55 14 68" stroke="#4a5a2b" stroke-width="3" fill="none"/>
+      <ellipse cx="10" cy="70" rx="9" ry="5" fill="#4a5a2b" transform="rotate(-20 10 70)"/>
+      <g fill="#d9a441">
+        <ellipse cx="30" cy="8" rx="6" ry="15"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(45 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(90 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(135 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(180 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(225 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(270 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(315 30 24)"/>
+      </g>
+      <circle cx="30" cy="24" r="12" fill="#5a3a22"/>
+    </svg>
+  </div>
+  <div class="sunflower d3">
+    <svg viewBox="0 0 60 100" width="100%" height="100%">
+      <line x1="30" y1="45" x2="30" y2="100" stroke="#4a5a2b" stroke-width="4"/>
+      <path d="M30 45 Q18 55 14 68" stroke="#4a5a2b" stroke-width="3" fill="none"/>
+      <ellipse cx="10" cy="70" rx="9" ry="5" fill="#4a5a2b" transform="rotate(-20 10 70)"/>
+      <g fill="#d9a441">
+        <ellipse cx="30" cy="8" rx="6" ry="15"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(45 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(90 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(135 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(180 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(225 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(270 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(315 30 24)"/>
+      </g>
+      <circle cx="30" cy="24" r="12" fill="#5a3a22"/>
+    </svg>
+  </div>
+  <div class="sunflower d1">
+    <svg viewBox="0 0 60 100" width="100%" height="100%">
+      <line x1="30" y1="45" x2="30" y2="100" stroke="#4a5a2b" stroke-width="4"/>
+      <path d="M30 45 Q18 55 14 68" stroke="#4a5a2b" stroke-width="3" fill="none"/>
+      <ellipse cx="10" cy="70" rx="9" ry="5" fill="#4a5a2b" transform="rotate(-20 10 70)"/>
+      <g fill="#d9a441">
+        <ellipse cx="30" cy="8" rx="6" ry="15"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(45 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(90 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(135 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(180 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(225 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(270 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(315 30 24)"/>
+      </g>
+      <circle cx="30" cy="24" r="12" fill="#5a3a22"/>
+    </svg>
+  </div>
+  <div class="sunflower d4">
+    <svg viewBox="0 0 60 100" width="100%" height="100%">
+      <line x1="30" y1="45" x2="30" y2="100" stroke="#4a5a2b" stroke-width="4"/>
+      <path d="M30 45 Q18 55 14 68" stroke="#4a5a2b" stroke-width="3" fill="none"/>
+      <ellipse cx="10" cy="70" rx="9" ry="5" fill="#4a5a2b" transform="rotate(-20 10 70)"/>
+      <g fill="#d9a441">
+        <ellipse cx="30" cy="8" rx="6" ry="15"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(45 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(90 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(135 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(180 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(225 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(270 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(315 30 24)"/>
+      </g>
+      <circle cx="30" cy="24" r="12" fill="#5a3a22"/>
+    </svg>
+  </div>
+  <div class="sunflower d5">
+    <svg viewBox="0 0 60 100" width="100%" height="100%">
+      <line x1="30" y1="45" x2="30" y2="100" stroke="#4a5a2b" stroke-width="4"/>
+      <path d="M30 45 Q18 55 14 68" stroke="#4a5a2b" stroke-width="3" fill="none"/>
+      <ellipse cx="10" cy="70" rx="9" ry="5" fill="#4a5a2b" transform="rotate(-20 10 70)"/>
+      <g fill="#d9a441">
+        <ellipse cx="30" cy="8" rx="6" ry="15"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(45 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(90 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(135 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(180 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(225 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(270 30 24)"/>
+        <ellipse cx="30" cy="8" rx="6" ry="15" transform="rotate(315 30 24)"/>
+      </g>
+      <circle cx="30" cy="24" r="12" fill="#5a3a22"/>
+    </svg>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="eyebrow">Para ti</div>
+
+  <p class="frase">
+    Hay canciones que simplemente se escuchan,<br>
+    y otras que te terminan llevando a un lugar<br>
+    muy especial, junto a esa persona.
+  </p>
+
+  <div class="platter">
+    <div class="vinyl" id="vinyl">
+      <div class="label"><span>Our Song</span></div>
+      <div class="center-hole"></div>
+    </div>
+  </div>
+
+  <p class="cancion">Aventura — <strong>Our Song</strong></p>
+
+  <button class="btn-escuchar" id="btnEscuchar">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+    <span id="btnLabel">Escuchar</span>
+  </button>
+
+  <div class="player-zone" id="playerZone">
+    <audio id="audio" controls preload="none">
+      <source src="cancion.mp3" type="audio/mpeg">
+      Tu navegador no soporta audio.
+    </audio>
+    <p class="aviso">Reproduciéndose aquí mismo, sin salir de esta página.</p>
+  </div>
+
+  <p class="firma">con cariño</p>
+</div>
+
+<script>
+  // estrellas
+  const starsContainer = document.getElementById('stars');
+  for(let i=0;i<45;i++){
+    const s = document.createElement('span');
+    s.style.left = Math.random()*100+'vw';
+    s.style.top = Math.random()*100+'vh';
+    s.style.animationDelay = (Math.random()*4)+'s';
+    starsContainer.appendChild(s);
+  }
+
+  // girasoles: ahora están dibujados directamente en el HTML, no hace falta generarlos por script
+
+  const btn = document.getElementById('btnEscuchar');
+  const btnLabel = document.getElementById('btnLabel');
+  const zone = document.getElementById('playerZone');
+  const audio = document.getElementById('audio');
+  const vinyl = document.getElementById('vinyl');
+  let started = false;
+
+  btn.addEventListener('click', () => {
+    if(!started){
+      zone.classList.add('show');
+      audio.play().catch(()=>{});
+      started = true;
+      btn.classList.add('active');
+      btnLabel.textContent = 'Reproduciendo';
+    } else if(audio.paused){
+      audio.play();
+    } else {
+      audio.pause();
+    }
+  });
+
+  audio.addEventListener('play', () => {
+    vinyl.classList.add('playing');
+    btn.classList.add('active');
+    btnLabel.textContent = 'Reproduciendo';
+  });
+  audio.addEventListener('pause', () => {
+    vinyl.classList.remove('playing');
+    btnLabel.textContent = 'Pausado';
+  });
+  audio.addEventListener('ended', () => {
+    vinyl.classList.remove('playing');
+    btnLabel.textContent = 'Escuchar de nuevo';
+  });
+</script>
+
+</body>
+</html>
